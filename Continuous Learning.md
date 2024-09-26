@@ -694,3 +694,219 @@ Save this file as `ships.yaml`, and you’ll use it when training the YOLO model
 5. Create the **dataset YAML file** to specify your dataset’s structure for YOLO.
 
 Once you’ve got this dataset ready, you're set to train the YOLO model. Would you like help with dataset annotation tools, augmentation, or any of these steps in more detail?
+---
+Downloading and using YOLO models offline for tasks such as ship detection requires several steps, from setting up the YOLO environment to configuring and running it on your dataset. I'll walk you through the process of downloading and running **YOLOv5** or **YOLOv8** models offline, as these are the most popular and accessible YOLO implementations.
+
+---
+
+### **Step 1: Download YOLOv5 or YOLOv8 Repository**
+
+Both **YOLOv5** and **YOLOv8** can be used offline once you download the repository and install the necessary dependencies.
+
+#### **1.1 Download YOLOv5 Repository**
+To get YOLOv5 locally, you need to clone the YOLOv5 GitHub repository:
+
+```bash
+git clone https://github.com/ultralytics/yolov5
+cd yolov5
+```
+
+Alternatively, for **YOLOv8**:
+```bash
+git clone https://github.com/ultralytics/ultralytics
+cd ultralytics
+```
+
+### **Step 2: Install Dependencies**
+
+Once you've cloned the repository, install the dependencies required to run the YOLO model. You will need Python 3.8+ and the required libraries.
+
+#### **2.1 Create a Virtual Environment (Optional but recommended)**
+It’s best to create a virtual environment to avoid conflicts with other Python libraries.
+
+```bash
+# Create virtual environment
+python3 -m venv yolov5_env
+
+# Activate the virtual environment
+source yolov5_env/bin/activate  # On macOS/Linux
+yolov5_env\Scripts\activate     # On Windows
+```
+
+#### **2.2 Install Required Libraries**
+
+For **YOLOv5**, install the dependencies listed in the `requirements.txt` file:
+
+```bash
+pip install -r requirements.txt
+```
+
+For **YOLOv8**, use the following:
+
+```bash
+pip install ultralytics
+```
+
+---
+
+### **Step 3: Download Pretrained YOLO Models**
+
+YOLO comes with pretrained models (e.g., YOLOv5s, YOLOv5m, YOLOv5l, YOLOv5x) that can be fine-tuned on custom datasets. These models can be downloaded and used offline.
+
+#### **3.1 Download Pretrained Weights**
+By default, YOLO downloads weights automatically when running a script for the first time, but you can manually download the weights for offline use.
+
+You can download the weights directly from the following links:
+
+- **YOLOv5 models**:
+  - [YOLOv5s (Small)](https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5s.pt)
+  - [YOLOv5m (Medium)](https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5m.pt)
+  - [YOLOv5l (Large)](https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5l.pt)
+  - [YOLOv5x (Extra Large)](https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5x.pt)
+
+- **YOLOv8 models**:
+  - [YOLOv8n (Nano)](https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt)
+  - [YOLOv8s (Small)](https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt)
+  - [YOLOv8m (Medium)](https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8m.pt)
+  - [YOLOv8l (Large)](https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8l.pt)
+
+Download the model weights (`.pt` files) and save them locally.
+
+---
+
+### **Step 4: Prepare Your Custom Dataset**
+
+For your ship detection task, make sure you have prepared your dataset in the proper structure as mentioned earlier:
+
+- **Images**: Place your training and validation images into `train/` and `val/` directories.
+- **Labels**: Corresponding YOLO-format `.txt` files for each image, containing the bounding boxes and class IDs.
+
+Organize your dataset folder as follows:
+
+```
+/dataset
+  /images
+    /train  # Training images
+    /val    # Validation images
+  /labels
+    /train  # Annotations for training images
+    /val    # Annotations for validation images
+```
+
+Next, create a `.yaml` file describing the dataset structure for YOLO. Here's an example `ships.yaml` file:
+
+```yaml
+train: /path_to_your_dataset/images/train
+val: /path_to_your_dataset/images/val
+
+nc: 1  # Number of classes (1 for 'ship')
+names: ['ship']  # Class name
+```
+
+---
+
+### **Step 5: Training the Model Offline**
+
+Now that you have the dataset and weights, you can start training the model offline.
+
+#### **5.1 Training YOLOv5**
+
+Use the following command to start training YOLOv5 on your dataset:
+
+```bash
+python train.py --img 640 --batch 16 --epochs 100 --data ships.yaml --weights yolov5s.pt --cache
+```
+
+Explanation of the command options:
+- **`--img 640`**: Input image size (YOLOv5 typically uses 640x640 by default).
+- **`--batch 16`**: Batch size (adjust according to your GPU memory).
+- **`--epochs 100`**: Number of training epochs.
+- **`--data ships.yaml`**: Path to the YAML file defining the dataset.
+- **`--weights yolov5s.pt`**: Path to the pretrained weights.
+- **`--cache`**: Caches the dataset in memory for faster training.
+
+#### **5.2 Training YOLOv8**
+
+For YOLOv8, the command to train is similar:
+
+```bash
+yolo task=detect mode=train model=yolov8s.pt data=ships.yaml epochs=100 imgsz=640
+```
+
+- **`task=detect`**: Specifies the task (YOLOv8 also supports segmentation and classification).
+- **`mode=train`**: Indicates that we want to train the model.
+- **`model=yolov8s.pt`**: Path to the model weights.
+- **`data=ships.yaml`**: Path to the dataset YAML file.
+- **`epochs=100`**: Number of training epochs.
+- **`imgsz=640`**: Input image size.
+
+---
+
+### **Step 6: Run Inference Offline**
+
+After training the model, you can use it to detect ships in new images or video streams.
+
+#### **6.1 Running Inference with YOLOv5**
+
+To run the trained YOLOv5 model on images, use the following command:
+
+```bash
+python detect.py --weights runs/train/exp/weights/best.pt --img 640 --source /path_to_images
+```
+
+- **`--weights`**: Path to the trained weights (best model from training).
+- **`--img 640`**: Input image size.
+- **`--source`**: Path to the image, video, or folder you want to run inference on.
+
+#### **6.2 Running Inference with YOLOv8**
+
+For YOLOv8, the process is very similar:
+
+```bash
+yolo task=detect mode=predict model=runs/detect/train/weights/best.pt source=/path_to_images
+```
+
+- **`mode=predict`**: Runs inference.
+- **`model=best.pt`**: Path to the trained model weights.
+- **`source`**: Path to the image or video file you want to test.
+
+---
+
+### **Step 7: Using the YOLO Model Offline with a Custom Application**
+
+Once you’ve trained the YOLO model, you can integrate it into your offline applications for ship detection. Here are a few ways you can deploy the model offline:
+
+1. **Run inference on local videos or images**: Use the `detect.py` or `yolo` scripts to process local files.
+2. **Integrate YOLO with a Custom Pipeline**: YOLO models can be integrated with Python applications using PyTorch. You can load the model and run inference as part of a larger pipeline for maritime surveillance.
+
+Example of running YOLOv5 in a Python script:
+```python
+import torch
+from PIL import Image
+
+# Load the YOLOv5 model
+model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')
+
+# Load image
+img = Image.open('ship.jpg')
+
+# Run inference
+results = model(img)
+
+# Display results
+results.show()  # You can also save or process results
+```
+
+---
+
+### **Summary**
+
+1. **Download and Set Up YOLOv5 or YOLOv8**: Clone the repository and install dependencies.
+2. **Prepare the Dataset**: Organize images and annotations, then create a `.yaml` file describing your dataset.
+3. **Download Pretrained Models**: Download weights like `yolov5s.pt` for offline use.
+4. **Train YOLO Offline**: Use the `train.py` or `yolo` script to train the model on your local machine.
+5. **Run Inference**: After training, use the model to detect ships in new images or video streams offline.
+
+Let me know if
+
+ you need further assistance with any specific step!
